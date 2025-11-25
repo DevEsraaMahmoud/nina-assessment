@@ -130,63 +130,6 @@ php artisan serve
 
 Visit `http://localhost:8000` in your browser.
 
-## 📁 Project Structure
-
-```
-nina-assessment/
-├── app/
-│   ├── Events/
-│   │   └── UserUpdated.php          # Event fired when user is updated
-│   ├── Http/
-│   │   ├── Controllers/
-│   │   │   ├── NotificationsController.php
-│   │   │   ├── SearchController.php
-│   │   │   └── UserController.php
-│   │   ├── Middleware/
-│   │   │   └── HandleInertiaRequests.php
-│   │   └── Requests/
-│   │       ├── MarkNotificationsAsReadRequest.php
-│   │       ├── StoreNotificationRequest.php
-│   │       ├── StoreUserRequest.php
-│   │       ├── UpdateNotificationRequest.php
-│   │       └── UpdateUserRequest.php
-│   ├── Listeners/
-│   │   └── SendUserUpdateNotification.php
-│   ├── Models/
-│   │   ├── Address.php
-│   │   ├── Notification.php
-│   │   └── User.php
-│   └── Services/
-│       └── UserSearchService.php    # Optimized search service
-├── database/
-│   ├── migrations/
-│   │   ├── create_users_table.php
-│   │   ├── create_addresses_table.php
-│   │   └── create_notifications_table.php
-│   └── seeders/
-│       ├── DatabaseSeeder.php
-│       └── UserSeeder.php           # Seeds 1 million users
-├── resources/
-│   ├── js/
-│   │   ├── Components/
-│   │   │   ├── DeleteConfirmationModal.vue
-│   │   │   ├── NotificationBell.vue
-│   │   │   ├── ToastContainer.vue
-│   │   │   └── UserDetailsModal.vue
-│   │   ├── Layouts/
-│   │   │   └── AuthenticatedLayout.vue
-│   │   └── Pages/
-│   │       ├── Dashboard.vue
-│   │       └── Users/
-│   │           ├── Create.vue
-│   │           ├── Edit.vue
-│   │           └── Show.vue
-│   └── views/
-│       └── app.blade.php
-└── routes/
-    └── web.php
-```
-
 ## 📄 License
 
 This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
