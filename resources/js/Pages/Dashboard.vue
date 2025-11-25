@@ -95,7 +95,7 @@ const performSearch = (query, immediate = false) => {
     if (immediate) {
         executeSearch();
     } else {
-        searchTimeout = setTimeout(executeSearch, 300);
+        searchTimeout = setTimeout(executeSearch, 1000);
     }
 };
 
