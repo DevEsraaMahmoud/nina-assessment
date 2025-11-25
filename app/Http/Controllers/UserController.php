@@ -30,7 +30,6 @@ class UserController extends Controller
 
         $users = $this->userSearchService->paginated($query, $perPage);
         
-        // Get recent unread notifications (last 10)
         $notifications = Notification::with('user')
             ->where('read', false)
             ->orderBy('created_at', 'desc')
@@ -72,9 +71,6 @@ class UserController extends Controller
             'street' => $validated['address']['street'],
         ]);
 
-        // Clear search cache after creating new user
-        $this->userSearchService->clearCache();
-
         return redirect()->route('users.index')->with('success', 'User created successfully.');
     }
 
@@ -85,7 +81,6 @@ class UserController extends Controller
     {
         $user->load('address');
         
-        // Return JSON for AJAX requests (modal) - check if it's NOT an Inertia request
         if ((request()->wantsJson() || request()->ajax()) && !request()->header('X-Inertia')) {
             return response()->json([
                 'user' => $user,
@@ -138,11 +133,7 @@ class UserController extends Controller
             ]);
         }
 
-        // Dispatch event for user update
         event(new UserUpdated($user));
-
-        // Clear search cache after updating user
-        $this->userSearchService->clearCache();
 
         return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }
@@ -153,9 +144,6 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $user->delete();
-        
-        // Clear search cache after deleting user
-        $this->userSearchService->clearCache();
         
         return redirect()->route('users.index')->with('success', 'User deleted successfully.');
     }
