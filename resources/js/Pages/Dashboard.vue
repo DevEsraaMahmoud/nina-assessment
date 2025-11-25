@@ -21,7 +21,7 @@ const showModal = ref(false);
 const selectedUserId = ref(null);
 const selectedUser = ref(null);
 const toasts = ref([]);
-const isSearching = ref(false); // Track if search is in progress
+const isSearching = ref(false);
 
 // Show toast from flash message
 const showFlashMessages = () => {
@@ -37,7 +37,6 @@ onMounted(() => {
     showFlashMessages();
 });
 
-// Watch for flash messages on page updates
 watch(
     () => page.props.flash,
     () => {
@@ -59,10 +58,8 @@ const removeToast = (index) => {
     toasts.value.splice(index, 1);
 };
 
-// Simple debounce implementation - wait 3 seconds before sending search request
 let searchTimeout = null;
 const performSearch = (query, immediate = false) => {
-    // Prevent multiple simultaneous requests
     if (isSearching.value) {
         return;
     }
@@ -72,12 +69,11 @@ const performSearch = (query, immediate = false) => {
     }
     
     const executeSearch = () => {
-        // Prevent if already searching
         if (isSearching.value) {
             return;
         }
         
-        isSearching.value = true; // Set loading state
+        isSearching.value = true;
         
         router.get(
             route('users.index'),
@@ -87,10 +83,10 @@ const performSearch = (query, immediate = false) => {
                 preserveScroll: true,
                 replace: true,
                 onFinish: () => {
-                    isSearching.value = false; // Reset loading state after request completes
+                    isSearching.value = false;
                 },
                 onError: () => {
-                    isSearching.value = false; // Reset loading state on error
+                    isSearching.value = false;
                 },
             }
         );
@@ -99,11 +95,10 @@ const performSearch = (query, immediate = false) => {
     if (immediate) {
         executeSearch();
     } else {
-        searchTimeout = setTimeout(executeSearch, 3000); // Wait 3 seconds before sending request
+        searchTimeout = setTimeout(executeSearch, 300);
     }
 };
 
-// Handle Enter key press to search immediately
 const handleSearchEnter = (event) => {
     if (event.key === 'Enter' && !isSearching.value) {
         performSearch(searchQuery.value, true);
@@ -116,7 +111,6 @@ watch(searchQuery, (newValue) => {
 
 const openUserModal = (user) => {
     selectedUserId.value = user.id;
-    // Pass the full user object (already includes address from the query)
     selectedUser.value = user;
     showModal.value = true;
 };
@@ -154,14 +148,13 @@ const closeModal = () => {
                 <div
                     class="overflow-hidden bg-white shadow-sm sm:rounded-lg"
                 >
-                    <!-- Search Bar -->
                     <div class="border-b border-gray-200 bg-white px-6 py-4">
                         <div class="flex items-center">
                             <div class="relative w-full max-w-sm">
                                 <input
                                     v-model="searchQuery"
                                     type="text"
-                                    placeholder="Search by name, email, or address... (Press Enter to search immediately)"
+                                    placeholder="Search by name or email... (Press Enter to search immediately)"
                                     :disabled="isSearching"
                                     :readonly="isSearching"
                                     class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm md:text-base py-2.5 px-4 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
@@ -196,7 +189,6 @@ const closeModal = () => {
                         </div>
                     </div>
 
-                    <!-- Users Table -->
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
@@ -277,7 +269,6 @@ const closeModal = () => {
                         </table>
                     </div>
 
-                    <!-- Pagination -->
                     <div
                         v-if="users.links && users.links.length > 3"
                         class="border-t border-gray-200 bg-white px-4 py-3 sm:px-6"
@@ -346,7 +337,6 @@ const closeModal = () => {
             </div>
         </div>
 
-        <!-- User Details Modal -->
         <UserDetailsModal
             :show="showModal"
             :user-id="selectedUserId"
@@ -354,7 +344,6 @@ const closeModal = () => {
             @close="closeModal"
         />
 
-        <!-- Toast Notifications -->
         <ToastContainer :toasts="toasts" @remove="removeToast" />
     </AuthenticatedLayout>
 </template>
