@@ -72,6 +72,9 @@ class UserController extends Controller
             'street' => $validated['address']['street'],
         ]);
 
+        // Clear search cache after creating new user
+        $this->userSearchService->clearCache();
+
         return redirect()->route('users.index')->with('success', 'User created successfully.');
     }
 
@@ -138,6 +141,9 @@ class UserController extends Controller
         // Dispatch event for user update
         event(new UserUpdated($user));
 
+        // Clear search cache after updating user
+        $this->userSearchService->clearCache();
+
         return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }
 
@@ -147,6 +153,9 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $user->delete();
+        
+        // Clear search cache after deleting user
+        $this->userSearchService->clearCache();
         
         return redirect()->route('users.index')->with('success', 'User deleted successfully.');
     }

@@ -231,13 +231,15 @@ const closeModal = () => {
                                 <tr
                                     v-for="user in users.data"
                                     :key="user.id"
-                                    class="hover:bg-gray-50 cursor-pointer transition-colors"
-                                    @click="openUserModal(user)"
+                                    class="hover:bg-gray-50 transition-colors"
                                 >
                                     <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
-                                        <span class="hover:text-indigo-600">
+                                        <button
+                                            @click="openUserModal(user)"
+                                            class="text-indigo-600 hover:text-indigo-900 hover:underline cursor-pointer"
+                                        >
                                             {{ user.first_name }} {{ user.last_name }}
-                                        </span>
+                                        </button>
                                     </td>
                                     <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                                         {{ user.email }}
@@ -250,16 +252,14 @@ const closeModal = () => {
                                     </td>
                                     <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                                         <button
-                                            @click.stop="openUserModal(user)"
-                                            class="text-indigo-600 hover:text-indigo-900"
+                                            @click="openUserModal(user)"
+                                            class="text-indigo-600 hover:text-indigo-900 mr-3"
                                         >
                                             View
                                         </button>
-                                        <span class="mx-2 text-gray-300">|</span>
                                         <Link
                                             :href="route('users.edit', user.id)"
                                             class="text-indigo-600 hover:text-indigo-900"
-                                            @click.stop
                                         >
                                             Edit
                                         </Link>
