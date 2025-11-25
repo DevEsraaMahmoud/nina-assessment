@@ -1,0 +1,76 @@
+name: CI — Laravel + Vue (Simple)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v4
+        with:
+          php-version: 8.1
+          extensions: mbstring, bcmath, pdo_sqlite, pdo_mysql
+          ini-values: post_max_size=256M, memory_limit=2G
+
+      - name: Install Composer dependencies (if composer.json exists)
+        if: exists('composer.json')
+        run: composer install --no-progress --no-interaction --prefer-dist
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install NPM dependencies & build (if package.json exists)
+        if: exists('package.json')
+        run: |
+          npm ci
+          npm run build
+
+      - name: Prepare .env for tests
+        if: exists('.env.example')
+        run: |
+          cp .env.example .env || true
+          php artisan key:generate --ansi || true
+          # use sqlite in-memory for CI to avoid external DB services
+          php -r "file_put_contents('.env', preg_replace('/DB_CONNECTION=.*$/m','DB_CONNECTION=sqlite',file_get_contents('.env')));"
+          php -r "file_put_contents('.env', preg_replace('/DB_DATABASE=.*$/m','DB_DATABASE=:memory:',file_get_contents('.env')));"
+          # ensure APP_ENV and APP_DEBUG suitable for tests
+          php -r "file_put_contents('.env', preg_replace('/APP_ENV=.*$/m','APP_ENV=testing',file_get_contents('.env')));"
+          php -r "file_put_contents('.env', preg_replace('/APP_DEBUG=.*$/m','APP_DEBUG=true',file_get_contents('.env')));"
+
+      - name: Run migrations (optional, will be fast with sqlite in-memory)
+        if: exists('artisan')
+        run: php artisan migrate --force || true
+
+      - name: Run PHPUnit tests (if phpunit.xml exists)
+        if: exists('phpunit.xml') || exists('phpunit.xml.dist')
+        run: |
+          vendor/bin/phpunit --colors=never --verbose
+
+      - name: Upload build artifact (optional)
+        if: exists('public/build') || exists('dist') || exists('public')
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: |
+            public/build
+            dist
+            public
