@@ -8,7 +8,7 @@ class UserSearchService
 {
     public function paginated(?string $query, int $perPage = 20)
     {
-        $builder = User::select('id','first_name','last_name','email');
+        $builder = User::with('address')->select('id','first_name','last_name','email');
 
         if ($query) {
             $builder->whereRaw(
@@ -23,7 +23,7 @@ class UserSearchService
 
     public function searchCollection(?string $query, int $limit = 20)
     {
-        $builder = User::select('id','first_name','last_name','email');
+        $builder = User::with('address')->select('id','first_name','last_name','email');
 
         if ($query) {
             $builder->whereRaw(
