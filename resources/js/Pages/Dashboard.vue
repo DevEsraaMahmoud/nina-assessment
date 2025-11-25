@@ -69,7 +69,7 @@ watch(
     (newFlash, oldFlash) => {
         // Only show if flash actually changed
         if (newFlash && newFlash !== oldFlash) {
-            showFlashMessages();
+        showFlashMessages();
         }
     },
     { deep: true }
@@ -93,18 +93,18 @@ const performSearch = (query, immediate = false) => {
     if (isSearching.value) {
         return;
     }
-
+    
     if (searchTimeout) {
         clearTimeout(searchTimeout);
     }
-
+    
     const executeSearch = () => {
         if (isSearching.value) {
             return;
         }
-
+        
         isSearching.value = true;
-
+        
         router.get(
             route('users.index'),
             { search: query },
@@ -121,7 +121,7 @@ const performSearch = (query, immediate = false) => {
             }
         );
     };
-
+    
     if (immediate) {
         executeSearch();
     } else {
@@ -171,6 +171,15 @@ const closeModal = () => {
     showModal.value = false;
     selectedUserId.value = null;
     selectedUser.value = null;
+};
+
+const handleUserDeleted = () => {
+    // Reload the users table after deletion
+    router.reload({ 
+        only: ['users', 'notifications'], 
+        preserveState: true, 
+        preserveScroll: true 
+    });
 };
 
 const openCreateModal = () => {
@@ -302,7 +311,7 @@ const getVisiblePageLinks = computed(() => {
     <AuthenticatedLayout>
         
         <template #right>
-            <NotificationBell :notifications="notifications" />
+                    <NotificationBell :notifications="notifications" />
         </template>
 
         <div class="py-8">
@@ -334,11 +343,11 @@ const getVisiblePageLinks = computed(() => {
                                 <button
                                     @click="openCreateModal"
                                     class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 hover:shadow-indigo-600/40 hover:from-indigo-700 hover:to-indigo-800 transition-all duration-200"
-                                >
+                    >
                                     <i class="fas fa-plus"></i>
-                                    Add New User
+                        Add New User
                                 </button>
-                            </div>
+                </div>
                         </div>
                     </div>
 
@@ -374,11 +383,11 @@ const getVisiblePageLinks = computed(() => {
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                         <div class="flex items-center gap-2">
                                             <i class="fas fa-envelope text-gray-400"></i>
-                                            {{ user.email }}
+                                        {{ user.email }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button 
+                                        <button
                                             @click="openEditModal(user)"
                                             class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 px-3 py-1.5 rounded-lg transition-all duration-150"
                                         >
@@ -411,7 +420,7 @@ const getVisiblePageLinks = computed(() => {
                             </div>
                             <nav class="flex items-center gap-2" aria-label="Pagination">
                                 <!-- Previous Page -->
-                                <Link 
+                                <Link
                                     v-if="users.links[0]?.url"
                                     :href="users.links[0].url"
                                     class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-150"
@@ -451,7 +460,7 @@ const getVisiblePageLinks = computed(() => {
                                 </template>
 
                                 <!-- Next Page -->
-                                <Link 
+                                <Link
                                     v-if="users.links[users.links.length - 1]?.url"
                                     :href="users.links[users.links.length - 1].url"
                                     class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-150"
@@ -460,14 +469,14 @@ const getVisiblePageLinks = computed(() => {
                                     <span class="hidden sm:inline">Next</span>
                                     <i class="fas fa-chevron-right text-xs ml-1"></i>
                                 </Link>
-                                <span 
-                                    v-else
+                                            <span
+                                                v-else
                                     class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-200 rounded-lg cursor-not-allowed"
                                 >
                                     <span class="hidden sm:inline">Next</span>
                                     <i class="fas fa-chevron-right text-xs ml-1"></i>
                                 </span>
-                            </nav>
+                                    </nav>
                         </div>
                     </div>
                 </div>
@@ -481,6 +490,7 @@ const getVisiblePageLinks = computed(() => {
             :loading="isLoadingUser"
             @close="closeModal"
             @edit="openEditModal"
+            @deleted="handleUserDeleted"
         />
 
         <UserFormModal

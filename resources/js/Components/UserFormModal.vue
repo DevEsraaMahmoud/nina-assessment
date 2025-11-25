@@ -2,6 +2,7 @@
 import Modal from '@/Components/Modal.vue';
 import { useForm } from '@inertiajs/vue3';
 import { ref, watch, computed, nextTick } from 'vue';
+import countries from '@/data/countries.json';
 
 const props = defineProps({
     show: {
@@ -18,54 +19,60 @@ const emit = defineEmits(['close']);
 
 const isEditMode = computed(() => !!props.user);
 
-// Countries and Cities data structure
-const countriesWithCities = {
-    'United States': ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix'],
-    'United Kingdom': ['London', 'Manchester', 'Birmingham', 'Liverpool', 'Leeds'],
-    'Canada': ['Toronto', 'Vancouver', 'Montreal', 'Calgary', 'Edmonton', 'Ottawa', 'Winnipeg', 'Quebec City', 'Hamilton', 'Kitchener'],
-    'Australia': ['Sydney', 'Melbourne', 'Brisbane', 'Perth'],
-    'Germany': ['Berlin', 'Munich', 'Hamburg', 'Frankfurt', 'Cologne'],
-    'France': ['Paris', 'Lyon', 'Marseille', 'Toulouse', 'Nice'],
-    'Italy': ['Rome', 'Milan', 'Naples', 'Turin', 'Palermo'],
-    'Spain': ['Madrid', 'Barcelona', 'Valencia', 'Seville', 'Zaragoza'],
-    'Netherlands': ['Amsterdam', 'Rotterdam', 'The Hague', 'Utrecht', 'Eindhoven'],
-    'Belgium': ['Brussels', 'Antwerp', 'Ghent', 'Charleroi', 'Liège'],
+// Selected country ref (stores country code)
+const selectedCountry = ref(null);
+
+// Helper to get country code from country name
+const getCountryCode = (countryName) => {
+    const country = countries.find(x => x.name === countryName);
+    return country ? country.code : null;
+};
+
+// Helper to get country name from country code
+const getCountryName = (countryCode) => {
+    const country = countries.find(x => x.code === countryCode);
+    return country ? country.name : countryCode;
 };
 
 // Computed property for countries list - include user's country if not in list (for edit mode)
-const countries = computed(() => {
-    const countryList = Object.keys(countriesWithCities);
+const countryOptions = computed(() => {
+    const countryList = countries.map(c => ({ code: c.code, name: c.name }));
     
     // If in edit mode and user has a country not in our list, add it
-    if (isEditMode.value && props.user?.address?.country && 
-        !countryList.includes(props.user.address.country)) {
-        return [props.user.address.country, ...countryList];
+    if (isEditMode.value && props.user?.address?.country) {
+        const userCountryName = props.user.address.country;
+        const existsInList = countries.find(c => c.name === userCountryName);
+        if (!existsInList) {
+            return [{ code: userCountryName, name: userCountryName }, ...countryList];
+        }
     }
     
     return countryList;
 });
 
 // Computed property for cities based on selected country
-const availableCities = computed(() => {
-    if (!form.address.country) {
+const cityOptions = computed(() => {
+    if (!selectedCountry.value) {
         return [];
     }
     
-    // If country is not in our predefined list but we're in edit mode, 
-    // allow the user's existing city
-    if (!countriesWithCities[form.address.country]) {
+    // Find country by code
+    const c = countries.find(x => x.code === selectedCountry.value);
+    
+    if (!c) {
+        // If country not found but we're in edit mode, allow the user's existing city
         if (isEditMode.value && props.user?.address?.city && 
-            form.address.country === props.user.address.country) {
+            getCountryName(selectedCountry.value) === props.user.address.country) {
             return [props.user.address.city];
         }
         return [];
     }
     
-    const cities = [...countriesWithCities[form.address.country]];
+    const cities = [...c.cities];
     
     // If in edit mode and user has a city that's not in the list, add it
     if (isEditMode.value && props.user?.address?.city && 
-        form.address.country === props.user.address.country &&
+        getCountryName(selectedCountry.value) === props.user.address.country &&
         !cities.includes(props.user.address.city)) {
         cities.unshift(props.user.address.city);
     }
@@ -106,9 +113,10 @@ watch(
             
             if (userCountry) {
                 form.address.country = userCountry;
-                // Wait for availableCities computed property to update
+                selectedCountry.value = getCountryCode(userCountry) || userCountry;
+                // Wait for cityOptions computed property to update
                 await nextTick();
-                // Now set the city - it should be in availableCities by now
+                // Now set the city - it should be in cityOptions by now
                 if (userCity) {
                     form.address.city = userCity;
                 }
@@ -126,6 +134,7 @@ watch(
                 post_code: '',
                 street: '',
             };
+            selectedCountry.value = null;
             isInitializing.value = false;
         }
     },
@@ -136,6 +145,9 @@ watch(
 watch(
     () => form.address.country,
     (newCountry, oldCountry) => {
+        // Update selectedCountry ref when form country changes (convert name to code)
+        selectedCountry.value = getCountryCode(newCountry) || newCountry;
+        
         // Only reset city if country actually changed and we're not initializing
         if (!isInitializing.value && newCountry !== oldCountry && oldCountry !== '' && oldCountry !== null && oldCountry !== undefined) {
             // Reset city when country changes
@@ -147,6 +159,16 @@ watch(
         }
     }
 );
+
+// Watch selectedCountry to update form (convert code to name for database)
+watch(selectedCountry, (newCountryCode) => {
+    if (!isInitializing.value) {
+        const countryName = getCountryName(newCountryCode);
+        if (form.address.country !== countryName) {
+            form.address.country = countryName || '';
+        }
+    }
+});
 
 // Reset form when modal closes
 watch(
@@ -309,23 +331,23 @@ const close = () => {
                                 </dt>
                                 <dd>
                                     <div class="relative">
-                                        <select
-                                            id="country"
-                                            v-model="form.address.country"
-                                            required
-                                            class="block w-full appearance-none rounded-xl border border-gray-300 bg-white px-4 py-3 pr-10 text-sm shadow-sm transition-all duration-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
-                                            :class="{
-                                                'border-red-500 focus:border-red-500 focus:ring-red-500/20': form.errors['address.country'],
-                                            }"
-                                        >
+                                                <select
+                                                    id="country"
+                                                    v-model="selectedCountry"
+                                                    required
+                                                    class="block w-full appearance-none rounded-xl border border-gray-300 bg-white px-4 py-3 pr-10 text-sm shadow-sm transition-all duration-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+                                                    :class="{
+                                                        'border-red-500 focus:border-red-500 focus:ring-red-500/20': form.errors['address.country'],
+                                                    }"
+                                                >
                                             <option value="" disabled>Select a country...</option>
-                                            <option
-                                                v-for="country in countries"
-                                                :key="country"
-                                                :value="country"
-                                            >
-                                                {{ country }}
-                                            </option>
+                                                    <option
+                                                        v-for="country in countryOptions"
+                                                        :key="country.code"
+                                                        :value="country.code"
+                                                    >
+                                                        {{ country.name }}
+                                                    </option>
                                         </select>
                                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                                             <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
@@ -352,22 +374,22 @@ const close = () => {
                                             id="city"
                                             v-model="form.address.city"
                                             required
-                                            :disabled="!form.address.country"
+                                                    :disabled="!selectedCountry"
                                             class="block w-full appearance-none rounded-xl border border-gray-300 bg-white px-4 py-3 pr-10 text-sm shadow-sm transition-all duration-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
                                             :class="{
                                                 'border-red-500 focus:border-red-500 focus:ring-red-500/20': form.errors['address.city'],
                                             }"
                                         >
-                                            <option value="" disabled>
-                                                {{ form.address.country ? 'Select a city...' : 'Select a country first...' }}
-                                            </option>
-                                            <option
-                                                v-for="city in availableCities"
-                                                :key="city"
-                                                :value="city"
-                                            >
-                                                {{ city }}
-                                            </option>
+                                                    <option value="" disabled>
+                                                        {{ selectedCountry ? 'Select a city...' : 'Select a country first...' }}
+                                                    </option>
+                                                    <option
+                                                        v-for="city in cityOptions"
+                                                        :key="city"
+                                                        :value="city"
+                                                    >
+                                                        {{ city }}
+                                                    </option>
                                         </select>
                                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                                             <i class="fas fa-chevron-down text-gray-400 text-sm"></i>

@@ -31,19 +31,15 @@ class UserSeeder extends Seeder
         $firstNames = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Emily', 'James', 'Jessica', 'Robert', 'Ashley', 'William', 'Amanda', 'Richard', 'Melissa', 'Joseph', 'Deborah', 'Thomas', 'Michelle', 'Christopher', 'Laura'];
         $lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee'];
         
-        // Countries and Cities data structure (matching UserFormModal)
-        $countriesWithCities = [
-            'United States' => ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix'],
-            'United Kingdom' => ['London', 'Manchester', 'Birmingham', 'Liverpool', 'Leeds'],
-            'Canada' => ['Toronto', 'Vancouver', 'Montreal', 'Calgary', 'Edmonton', 'Ottawa', 'Winnipeg', 'Quebec City', 'Hamilton', 'Kitchener'],
-            'Australia' => ['Sydney', 'Melbourne', 'Brisbane', 'Perth'],
-            'Germany' => ['Berlin', 'Munich', 'Hamburg', 'Frankfurt', 'Cologne'],
-            'France' => ['Paris', 'Lyon', 'Marseille', 'Toulouse', 'Nice'],
-            'Italy' => ['Rome', 'Milan', 'Naples', 'Turin', 'Palermo'],
-            'Spain' => ['Madrid', 'Barcelona', 'Valencia', 'Seville', 'Zaragoza'],
-            'Netherlands' => ['Amsterdam', 'Rotterdam', 'The Hague', 'Utrecht', 'Eindhoven'],
-            'Belgium' => ['Brussels', 'Antwerp', 'Ghent', 'Charleroi', 'Liège'],
-        ];
+        // Load countries and cities from JSON file (matching UserFormModal)
+        $countriesJsonPath = resource_path('js/data/countries.json');
+        $countriesData = json_decode(file_get_contents($countriesJsonPath), true);
+        
+        // Convert to array format: country_name => [cities]
+        $countriesWithCities = [];
+        foreach ($countriesData as $country) {
+            $countriesWithCities[$country['name']] = $country['cities'];
+        }
 
         for ($i = 0; $i < $totalUsers; $i += $chunkSize) {
             // Create new Faker instance for each chunk to prevent memory buildup

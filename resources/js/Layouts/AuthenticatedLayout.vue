@@ -50,10 +50,10 @@ const showingNavigationDropdown = ref(false);
                         <div class="flex items-center gap-4">
                             <!-- Right side slot for actions like notification bell -->
                             <slot name="right" />
-                            
+
                             <!-- Mobile hamburger -->
                             <div class="flex items-center sm:hidden">
-                                <button
+                            <button
                                     @click="showingNavigationDropdown = !showingNavigationDropdown"
                                     class="inline-flex items-center justify-center rounded-lg p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 >
@@ -61,7 +61,7 @@ const showingNavigationDropdown = ref(false);
                                         :class="showingNavigationDropdown ? 'fas fa-times' : 'fas fa-bars'"
                                         class="h-6 w-6"
                                     ></i>
-                                </button>
+                            </button>
                             </div>
                         </div>
                     </div>

@@ -32,13 +32,13 @@ class UserController extends Controller
         $users = Cache::remember($cacheKey, 20, function () use ($query, $perPage) {
             return $this->userSearchService->paginated($query, $perPage);
         });
-
+        
         $notifications = Notification::select('id','user_id','type','message','read','created_at')
             ->where('read', false)
             ->orderByDesc('created_at')
             ->limit(6)
             ->get();
-
+        
         // withQueryString keeps search/per_page in paginator urls
         return Inertia::render('Dashboard', [
             'users' => $users->withQueryString(),
@@ -148,6 +148,10 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $user->delete();
+        
+        // Don't clear cache here - the redirect will fetch fresh data
+        // The short cache TTL (20s) ensures data stays fresh enough
+        // The frontend will reload the table after deletion
         
         return redirect()->route('users.index')->with('success', 'User deleted successfully.');
     }

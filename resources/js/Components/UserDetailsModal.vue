@@ -19,7 +19,7 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(['close', 'edit']);
+const emit = defineEmits(['close', 'edit', 'deleted']);
 const userData = ref(props.user);
 const showDeleteConfirmation = ref(false);
 const isLoading = ref(false);
@@ -84,11 +84,21 @@ const closeDeleteConfirmation = () => {
 
 const confirmDelete = () => {
     router.delete(route('users.destroy', props.userId), {
-        preserveScroll: true,
-        onSuccess: () => {
+        preserveScroll: false,
+        onSuccess: (page) => {
             closeDeleteConfirmation();
             close();
-            router.reload({ only: ['users'] });
+            // Emit delete event to parent to trigger reload
+            emit('deleted');
+            // Reload users and notifications
+            router.reload({ 
+                only: ['users', 'notifications'], 
+                preserveState: true,
+                preserveScroll: false 
+            });
+        },
+        onError: () => {
+            closeDeleteConfirmation();
         },
     });
 };
