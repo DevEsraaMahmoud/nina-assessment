@@ -31,7 +31,7 @@ class NotificationTest extends TestCase
             'read' => false,
         ]);
 
-        $this->assertDatabaseHas('user_activity_notifications', [
+        $this->assertDatabaseHas('notifications', [
             'id' => $notification->id,
             'user_id' => $user->id,
             'type' => 'updated',

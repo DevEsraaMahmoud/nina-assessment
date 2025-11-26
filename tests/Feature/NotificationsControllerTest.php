@@ -172,12 +172,12 @@ class NotificationsControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertJson(['success' => true]);
 
-        $this->assertDatabaseHas('user_activity_notifications', [
+        $this->assertDatabaseHas('notifications', [
             'id' => $notification1->id,
             'read' => true,
         ]);
 
-        $this->assertDatabaseHas('user_activity_notifications', [
+        $this->assertDatabaseHas('notifications', [
             'id' => $notification2->id,
             'read' => true,
         ]);

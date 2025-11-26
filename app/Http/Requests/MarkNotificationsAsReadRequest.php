@@ -23,7 +23,7 @@ class MarkNotificationsAsReadRequest extends FormRequest
     {
         return [
             'notification_ids' => 'present|array',
-            'notification_ids.*' => 'exists:user_activity_notifications,id',
+            'notification_ids.*' => 'exists:notifications,id',
         ];
     }
 
