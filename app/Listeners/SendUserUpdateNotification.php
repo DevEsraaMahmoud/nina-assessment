@@ -3,7 +3,6 @@
 namespace App\Listeners;
 
 use App\Events\UserUpdated;
-use App\Helpers\CacheHelper;
 use App\Models\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
@@ -52,7 +51,8 @@ class SendUserUpdateNotification implements ShouldQueue
             ]);
             
             // Store notification in database
-            $notification = Notification::create([
+            // Not cached - notifications are fetched fresh each time (query is optimized with indexes)
+            Notification::create([
                 'user_id' => $user->id,
                 'type' => 'updated',
                 'message' => "User {$user->first_name} {$user->last_name} has been updated.",
@@ -64,9 +64,6 @@ class SendUserUpdateNotification implements ShouldQueue
                 ],
                 'read' => false,
             ]);
-
-            // Invalidate notifications cache
-            CacheHelper::flushTags(['notifications', "notifications.user.{$user->id}"]);
             
             // You can add more notification logic here:
             // - Send email notification

@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\CacheHelper;
 use App\Http\Requests\MarkNotificationsAsReadRequest;
 use App\Http\Resources\NotificationResource;
 use App\Models\Notification;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class NotificationsController extends Controller
@@ -18,18 +16,12 @@ class NotificationsController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $notifications = CacheHelper::rememberWithTags(
-                ['notifications'],
-                'notifications:unread:limit_10',
-                30,
-                function () {
-                    return Notification::with('user')
-                        ->where('read', false)
-                        ->orderBy('created_at', 'desc')
-                        ->limit(10)
-                        ->get();
-                }
-            );
+            // Not cached - notifications change frequently and query is already optimized with indexes
+            $notifications = Notification::with('user')
+                ->where('read', false)
+                ->orderBy('created_at', 'desc')
+                ->limit(10)
+                ->get();
         
             return response()->json([
                 'notifications' => NotificationResource::collection($notifications),
@@ -60,9 +52,6 @@ class NotificationsController extends Controller
                     'read' => true,
                     'read_at' => now(),
                 ]);
-
-                // Clear notifications cache
-                CacheHelper::flushTags(['notifications']);
             }
             
             // Return updated notifications

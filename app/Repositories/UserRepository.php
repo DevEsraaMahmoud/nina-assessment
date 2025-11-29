@@ -116,12 +116,13 @@ class UserRepository
             $cacheKey = 'index_data:' . md5($query . '|' . $perPage . '|' . $page);
 
             return CacheHelper::rememberWithTags(
-                ['index', 'users', 'notifications'],
+                ['index', 'users'],
                 $cacheKey,
                 60,
                 function () use ($query, $perPage, $page) {
                     $users = $this->userSearchService->paginated($query, $perPage, $page);
                     
+                    // Notifications not cached - they change frequently and query is optimized
                     $notifications = $this->getCachedNotifications();
 
                     return [
@@ -151,24 +152,18 @@ class UserRepository
     }
 
     /**
-     * Get cached unread notifications.
+     * Get unread notifications.
+     * Not cached because notifications change frequently and the query is already optimized.
      *
      * @return \Illuminate\Database\Eloquent\Collection
      */
     private function getCachedNotifications()
     {
-        return CacheHelper::rememberWithTags(
-            ['notifications'],
-            'unread_notifications:limit_6',
-            30,
-            function () {
-                return Notification::select('id', 'user_id', 'type', 'message', 'read', 'created_at')
-                    ->where('read', false)
-                    ->orderByDesc('created_at')
-                    ->limit(6)
-                    ->get();
-            }
-        );
+        return Notification::select('id', 'user_id', 'type', 'message', 'read', 'created_at')
+            ->where('read', false)
+            ->orderByDesc('created_at')
+            ->limit(6)
+            ->get();
     }
 
     /**

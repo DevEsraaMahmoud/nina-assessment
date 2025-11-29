@@ -141,8 +141,8 @@ class UserController extends Controller
         try {
             $this->userRepository->updateFromRequest($request, $user);
 
-            // Clear relevant caches
-            CacheHelper::flushTags(['users', 'user-search', 'index', "notifications.user.{$user->id}"]);
+            // Clear relevant caches (notifications not cached - fetched fresh)
+            CacheHelper::flushTags(['users', 'user-search', 'index']);
 
             return redirect()->route('users.index')->with('success', 'User updated successfully.');
         } catch (\Exception $e) {
@@ -168,8 +168,8 @@ class UserController extends Controller
             $userId = $user->id;
             $this->userRepository->delete($user);
 
-            // Clear relevant caches
-            CacheHelper::flushTags(['users', 'user-search', 'index', "notifications.user.{$userId}"]);
+            // Clear relevant caches (notifications not cached - fetched fresh)
+            CacheHelper::flushTags(['users', 'user-search', 'index']);
 
             return redirect()->route('users.index')->with('success', 'User deleted successfully.');
         } catch (\Exception $e) {
