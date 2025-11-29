@@ -377,10 +377,6 @@ The seeder is optimized for memory, but if issues persist:
 
 This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
 
-## 📄 License
-
-This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-
 ## 👤 Author
 
 **DevEsraaMahmoud**
